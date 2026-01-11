@@ -1,9 +1,14 @@
 package com.pedrodelmiro.taskmanager;
 
+import com.pedrodelmiro.taskmanager.db.Database;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -11,7 +16,7 @@ import java.util.Properties;
  */
 
 public class Main {
-    public static void main (String[] args) throws IOException{
+    public static void main (String[] args) throws IOException, SQLException {
         Properties props = new Properties();
         try(InputStream is =
                 Main.class.getClassLoader().getResourceAsStream("application.properties")){
@@ -35,6 +40,15 @@ public class Main {
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
         }));
+
+        Database db = new Database();
+        try{
+            Connection con = db.connect();
+            System.out.println("Database Connected");
+        }catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
 
         server.start();
         System.out.println("server starting on http://" + host +":" + port + "/");
