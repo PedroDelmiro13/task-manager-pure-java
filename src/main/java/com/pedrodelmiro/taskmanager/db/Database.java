@@ -14,7 +14,7 @@ public class Database {
     public Connection connect() throws SQLException {
         Properties props = new Properties();
         try(InputStream is =
-                    Main.class.getClassLoader().getResourceAsStream("application.properties")){
+                    Database.class.getClassLoader().getResourceAsStream("application.properties")){
 
             if (is == null) {
                 throw new RuntimeException("application.properties not found");
