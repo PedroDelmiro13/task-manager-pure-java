@@ -1,35 +1,47 @@
 package com.pedrodelmiro.taskmanager.db;
 
-import com.pedrodelmiro.taskmanager.Main;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
-import java.io.IOException;
+import javax.sql.DataSource;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
-public class Database {
+public final class Database {
 
-    public Connection connect() throws SQLException {
-        Properties props = new Properties();
-        try(InputStream is =
-                    Database.class.getClassLoader().getResourceAsStream("application.properties")){
+    private static final HikariDataSource dataSource;
 
-            if (is == null) {
-                throw new RuntimeException("application.properties not found");
+    static {
+        try {
+            Properties props = new Properties();
+            try (InputStream is =
+                         Database.class.getClassLoader().getResourceAsStream("application.properties")) {
+
+                if (is == null) {
+                    throw new RuntimeException("application.properties not found");
+                }
+                props.load(is);
             }
-            props.load(is);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(props.getProperty("database.url"));
+            config.setUsername(props.getProperty("database.role"));
+            config.setPassword(props.getProperty("database.password"));
+
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setPoolName("TaskManagerPool");
+
+            dataSource = new HikariDataSource(config);
+
+        } catch (Exception e) {
+            throw new ExceptionInInitializerError(e);
         }
-        String databaseUrl = props.getProperty("database.url");
-        String databaseRole = props.getProperty("database.role");
-        String databasePassword = props.getProperty("database.password");
-        return DriverManager.getConnection(
-                databaseUrl,
-                databaseRole,
-                databasePassword
-        );
+    }
+
+    private Database() {}
+
+    public static DataSource getDataSource() {
+        return dataSource;
     }
 }
