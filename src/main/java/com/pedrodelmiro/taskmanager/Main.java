@@ -1,6 +1,7 @@
 package com.pedrodelmiro.taskmanager;
 
 import com.pedrodelmiro.taskmanager.db.Database;
+import com.pedrodelmiro.taskmanager.db.model.SchemaInitializer;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,13 +40,8 @@ public class Main {
             exchange.close();
         }));
 
-        Database db = new Database();
-        try{
-            Connection con = db.connect();
-            System.out.println("Database Connected");
-        }catch(Exception e){
-            System.out.println("Error: " + e.getMessage());
-        }
+        SchemaInitializer.run(Database.getDataSource());
+        System.out.println("Database Connected");
 
 
         server.start();
