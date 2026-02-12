@@ -1,12 +1,12 @@
 package com.pedrodelmiro.taskmanager;
 
 import com.pedrodelmiro.taskmanager.db.Database;
-import com.pedrodelmiro.taskmanager.db.model.SchemaInitializer;
 import com.sun.net.httpserver.HttpServer;
+import org.flywaydb.core.Flyway;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -40,8 +40,19 @@ public class Main {
             exchange.close();
         }));
 
-        SchemaInitializer.run(Database.getDataSource());
-        System.out.println("Database Connected");
+        try {
+
+            Flyway.configure()
+                    .dataSource(Database.getDataSource())
+                    .load()
+                    .migrate();
+
+            System.out.println("Migrations OK");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Migration error", e);
+        }
+
 
 
         server.start();
